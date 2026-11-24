@@ -7,6 +7,8 @@ Tool i used : JDK 17 eclipse adptonium, JAVA 8,LWJGL > [!NOTE]
 > [!NOTE]
 > The software Entitled : Eaglercave-1.0.0 or CaveGame Is copyrighted Or Violated Minecraft/Mojang Copyrights Holder In the LICENSE FILE
 > Copyrighted Files Are used Sayed In The Minecraft.net MINECRAFT AS THE SOFTWARE FROM MOJANG ARE USED IN THIS GAME DO PLESE THIS GAME I SAYED TWO
-> ARE NOT MADED OR DISTERBUTED BY THE EAGLERCARFT TEAM 
+> ARE NOT MADED OR DISTERBUTED BY THE EAGLERCARFT TEAM
+
+THIS SOFTWARE PROTECTED BY A LICENSE 
 
 
