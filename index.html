@@ -66,7 +66,7 @@
       progress(12, 'Loading CheerpJ runtime…');
       await cheerpjInit({
         version: 8,
-        javaProperties: ['java.library.path=/app/EaglerCave-1.0.0'],
+        javaProperties: ['java.library.path=EaglerCave-1.0.0/app/'],
         libraries: { 'libGL.so.1': '/app/gl4es.wasm' },
         enableX11: true,
         status: 'none'
@@ -109,7 +109,7 @@
       try {
         await cheerpjRunMain(
           'net.minecraft.client.Minecraft',
-          '/app/EaglerCave-1.0.0/lwjgl-2.9.3.jar:/app/lwjgl_util-2.9.3.jar:/app/minecraft-1.0.0.jar'
+          '/EaglerCave-1.0.0/app/lwjgl-2.9.3.jar:/app/lwjgl_util-2.9.3.jar:/app/minecraft-1.0.0.jar'
         );
       } catch (e) {
         clearInterval(timer);
