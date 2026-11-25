@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ETPTEK — Minecraft 1.0.0</title>
+  <script src="https://cjrtnc.leaningtech.com/5.0/loader.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: #000; color: #d8d8d8; font-family: "Courier New", monospace; height: 100%; overflow: hidden; }
+    #bar { position: absolute; top: 0; left: 0; right: 0; height: 38px; padding: 9px 14px; background: #141414; border-bottom: 1px solid #333; font-size: 12px; z-index: 60; display: flex; align-items: center; gap: 14px; }
+    #status { color: #8fb9ff; }
+    #play { background: #2b6cb0; color: #fff; border: 1px solid #4a90d9; padding: 4px 14px; font: inherit; font-size: 12px; cursor: pointer; }
+    #play:hover { background: #3676bd; }
+    #display { position: absolute; top: 38px; left: 0; right: 0; bottom: 0; overflow: hidden; }
+
+    /* Cover the CheerpJ community banner rendered inside its own iframe. */
+    #banner-cover { position: absolute; left: 0; right: 0; bottom: 0; height: 30px; background: #000; z-index: 25; pointer-events: none; }
+
+    /* Old-Eaglercraft-style boot splash */
+    #boot { position: absolute; inset: 0; z-index: 50; background: #050505; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity .7s ease; }
+    #boot.gone { opacity: 0; pointer-events: none; }
+    #boot::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0px, rgba(255,255,255,.025) 1px, transparent 1px, transparent 3px); pointer-events: none; }
+    .logo { font-family: "Courier New", monospace; font-weight: bold; font-size: 72px; letter-spacing: 10px; color: #6ab7ff; text-shadow: 0 0 12px rgba(80,160,255,.55), 4px 4px 0 #12365c; margin-bottom: 2px; }
+    .logo span { color: #ff8a3d; text-shadow: 0 0 12px rgba(255,138,61,.5), 4px 4px 0 #5c2a12; }
+    .sub { font-size: 14px; letter-spacing: 5px; color: #7a7a7a; margin-bottom: 42px; }
+    .bar-wrap { width: 420px; max-width: 80vw; height: 18px; border: 2px solid #3d3d3d; background: #101010; padding: 2px; }
+    .bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #2b6cb0, #6ab7ff); transition: width .35s ease; box-shadow: 0 0 8px rgba(106,183,255,.5); }
+    .msg { margin-top: 12px; font-size: 12px; color: #9a9a9a; height: 16px; }
+    .hint { margin-top: 34px; font-size: 10px; color: #4d4d4d; }
+    .blink { animation: blink 1s steps(2, start) infinite; }
+    @keyframes blink { to { visibility: hidden; } }
+  </style>
+</head>
+<body>
+  <div id="bar">
+    <span id="status">Booting ETPTEK…</span>
+    <button id="play" hidden>Play Minecraft 1.0.0</button>
+    <span style="font-size:11px;opacity:.55">Click the game to capture mouse/keyboard · Esc releases cursor</span>
+  </div>
+
+  <div id="display"></div>
+  <div id="banner-cover"></div>
+
+  <div id="boot">
+    <div class="logo">ETP<span>TEK</span></div>
+    <div class="sub">MINECRAFT 1.0.0</div>
+    <div class="bar-wrap"><div class="bar-fill" id="bar-fill"></div></div>
+    <div class="msg" id="boot-msg">Starting up…</div>
+    <div class="hint">ETPTEK BOOT LOADER v1.0 <span class="blink">_</span></div>
+  </div>
+
+  <script>
+    const status = document.getElementById('status');
+    const playButton = document.getElementById('play');
+    const boot = document.getElementById('boot');
+    const barFill = document.getElementById('bar-fill');
+    const bootMsg = document.getElementById('boot-msg');
+
+    function progress(pct, msg) {
+      barFill.style.width = pct + '%';
+      if (msg) bootMsg.textContent = msg;
+    }
+
+    async function init() {
+      progress(12, 'Loading CheerpJ runtime…');
+      await cheerpjInit({
+        version: 8,
+        javaProperties: ['java.library.path=/app/'],
+        libraries: { 'libGL.so.1': '/app/gl4es.wasm' },
+        enableX11: true,
+        status: 'none'
+      });
+      progress(70, 'Setting up display…');
+      await cheerpjCreateDisplay(-1, -1, document.getElementById('display'));
+      progress(100, 'Ready.');
+      status.textContent = 'ETPTEK runtime ready.';
+      playButton.hidden = false;
+    }
+
+    async function play() {
+      playButton.hidden = true;
+      status.textContent = 'Starting Minecraft 1.0.0…';
+      boot.classList.remove('gone');
+      progress(35, 'Loading game classes…');
+      const timer = setInterval(() => {
+        const w = parseFloat(barFill.style.width) || 0;
+        if (w < 92) progress(w + 7, 'Starting game…');
+      }, 600);
+
+      // Keep the ETPTEK splash up until the Java game actually draws a canvas.
+      // Watching the display avoids showing CheerpJ's own spinner at any point.
+      const display = document.getElementById('display');
+      let finished = false;
+      function finish() {
+        if (finished) return;
+        finished = true;
+        clearInterval(timer);
+        observer.disconnect();
+        progress(100, 'Ready.');
+        setTimeout(() => boot.classList.add('gone'), 700);
+      }
+      const observer = new MutationObserver(() => {
+        if (display.querySelector('canvas')) finish();
+      });
+      observer.observe(display, { childList: true, subtree: true });
+      // Safety net: never trap the user behind the splash.
+      setTimeout(finish, 90000);
+      try {
+        await cheerpjRunMain(
+          'net.minecraft.client.Minecraft',
+          '/app/lwjgl-2.9.3.jar:/app/lwjgl_util-2.9.3.jar:/app/minecraft-1.0.0.jar'
+        );
+      } catch (e) {
+        clearInterval(timer);
+        boot.classList.add('gone');
+        status.textContent = 'Error: ' + e;
+        console.error(e);
+      }
+    }
+
+    playButton.addEventListener('click', play);
+    init().catch(e => {
+      bootMsg.textContent = 'Failed to initialize: ' + e;
+      status.textContent = 'Failed to initialize CheerpJ: ' + e;
+      console.error(e);
+    });
+  </script>
+</body>
+</html>
